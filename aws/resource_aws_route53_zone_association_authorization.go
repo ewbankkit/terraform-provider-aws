@@ -41,7 +41,7 @@ func resourceAwsRoute53ZoneAssociationAuthorization() *schema.Resource {
 }
 
 func resourceAwsRoute53ZoneAssociationAuthorizationCreate(d *schema.ResourceData, meta interface{}) error {
-	r53 := meta.(*AWSClient).r53conn
+	conn := meta.(*AWSClient).r53conn
 
 	req := &route53.CreateVPCAssociationAuthorizationInput{
 		HostedZoneId: aws.String(d.Get("zone_id").(string)),
@@ -55,14 +55,12 @@ func resourceAwsRoute53ZoneAssociationAuthorizationCreate(d *schema.ResourceData
 		req.VPC.VPCRegion = aws.String(meta.(*AWSClient).region)
 	}
 
-	log.Printf("[DEBUG] Creating Route53 VPC Association Authorization for hosted zone %s with VPC %s and region %s", *req.HostedZoneId, *req.VPC.VPCId, *req.VPC.VPCRegion)
-	var err error
-	_, err = r53.CreateVPCAssociationAuthorization(req)
+	log.Printf("[DEBUG] Creating Route53 zone association authorization: %#v", req)
+	_, err := conn.CreateVPCAssociationAuthorization(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error creating Route53 zone association authorization: %s", err.Error())
 	}
 
-	// Store association id
 	d.SetId(fmt.Sprintf("%s:%s", *req.HostedZoneId, *req.VPC.VPCId))
 	d.Set("vpc_region", req.VPC.VPCRegion)
 
@@ -70,51 +68,54 @@ func resourceAwsRoute53ZoneAssociationAuthorizationCreate(d *schema.ResourceData
 }
 
 func resourceAwsRoute53ZoneAssociationAuthorizationRead(d *schema.ResourceData, meta interface{}) error {
-	r53 := meta.(*AWSClient).r53conn
-	zone_id, vpc_id := resourceAwsRoute53ZoneAssociationAuthorizationParseId(d.Id())
-	req := route53.ListVPCAssociationAuthorizationsInput{HostedZoneId: aws.String(zone_id)}
+	conn := meta.(*AWSClient).r53conn
+
+	zoneId, vpcId := resourceAwsRoute53ZoneAssociationAuthorizationParseId(d.Id())
+	req := route53.ListVPCAssociationAuthorizationsInput{
+		HostedZoneId: aws.String(zoneId),
+	}
 	for {
-		res, err := r53.ListVPCAssociationAuthorizations(&req)
+		res, err := conn.ListVPCAssociationAuthorizations(&req)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error reading Route53 zone association authorizations: %s", err.Error())
 		}
 
 		for _, vpc := range res.VPCs {
-			if vpc_id == *vpc.VPCId {
+			if vpcId == *vpc.VPCId {
 				return nil
 			}
 		}
 
-		// Loop till we find our authorization or we reach the end
-		if res.NextToken != nil {
-			req.NextToken = res.NextToken
-		} else {
+		// Loop till we find our authorization or we reach the end.
+		if res.NextToken == nil {
 			break
 		}
+		req.NextToken = res.NextToken
 	}
 
-	// no association found
+	// No authorization found.
 	d.SetId("")
 	return nil
 }
 
 func resourceAwsRoute53ZoneAssociationAuthorizationDelete(d *schema.ResourceData, meta interface{}) error {
-	r53 := meta.(*AWSClient).r53conn
-	zone_id, vpc_id := resourceAwsRoute53ZoneAssociationAuthorizationParseId(d.Id())
-	log.Printf("[DEBUG] Deleting Route53 Assocatiation Authorization for (%s) from vpc %s)",
-		zone_id, vpc_id)
+	conn := meta.(*AWSClient).r53conn
 
-	req := route53.DeleteVPCAssociationAuthorizationInput{
-		HostedZoneId: aws.String(zone_id),
+	log.Printf("[DEBUG] Deleting Route53 zone association authorization: %s", d.Id())
+	zoneId, vpcId := resourceAwsRoute53ZoneAssociationAuthorizationParseId(d.Id())
+	_, err := conn.DeleteVPCAssociationAuthorization(&route53.DeleteVPCAssociationAuthorizationInput{
+		HostedZoneId: aws.String(zoneId),
 		VPC: &route53.VPC{
-			VPCId:     aws.String(vpc_id),
+			VPCId:     aws.String(vpcId),
 			VPCRegion: aws.String(d.Get("vpc_region").(string)),
 		},
-	}
-
-	_, err := r53.DeleteVPCAssociationAuthorization(&req)
+	})
 	if err != nil {
-		return err
+		if isAWSErr(err, "VPCAssociationAuthorizationNotFound", "") {
+			log.Printf("[DEBUG] Route53 zone association authorization %s is already gone", d.Id())
+		} else {
+			return fmt.Errorf("Error deleting Route53 zone association authorization: %s", err.Error())
+		}
 	}
 
 	return nil
