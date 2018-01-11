@@ -11,26 +11,26 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 )
 
-func resourceAwsRoute53VPCAssociationAuthorization() *schema.Resource {
+func resourceAwsRoute53ZoneAssociationAuthorization() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceAwsRoute53VPCAssociationAuthorizationCreate,
-		Read:   resourceAwsRoute53VPCAssociationAuthorizationRead,
-		Delete: resourceAwsRoute53VPCAssociationAuthorizationDelete,
+		Create: resourceAwsRoute53ZoneAssociationAuthorizationCreate,
+		Read:   resourceAwsRoute53ZoneAssociationAuthorizationRead,
+		Delete: resourceAwsRoute53ZoneAssociationAuthorizationDelete,
 
 		Schema: map[string]*schema.Schema{
-			"zone_id": &schema.Schema{
+			"zone_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
 
-			"vpc_id": &schema.Schema{
+			"vpc_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
 
-			"vpc_region": &schema.Schema{
+			"vpc_region": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -40,18 +40,19 @@ func resourceAwsRoute53VPCAssociationAuthorization() *schema.Resource {
 	}
 }
 
-func resourceAwsRoute53VPCAssociationAuthorizationCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsRoute53ZoneAssociationAuthorizationCreate(d *schema.ResourceData, meta interface{}) error {
 	r53 := meta.(*AWSClient).r53conn
 
 	req := &route53.CreateVPCAssociationAuthorizationInput{
 		HostedZoneId: aws.String(d.Get("zone_id").(string)),
 		VPC: &route53.VPC{
-			VPCId:     aws.String(d.Get("vpc_id").(string)),
-			VPCRegion: aws.String(meta.(*AWSClient).region),
+			VPCId: aws.String(d.Get("vpc_id").(string)),
 		},
 	}
-	if w := d.Get("vpc_region"); w != "" {
-		req.VPC.VPCRegion = aws.String(w.(string))
+	if v, ok := d.GetOk("vpc_region"); ok {
+		req.VPC.VPCRegion = aws.String(v.(string))
+	} else {
+		req.VPC.VPCRegion = aws.String(meta.(*AWSClient).region)
 	}
 
 	log.Printf("[DEBUG] Creating Route53 VPC Association Authorization for hosted zone %s with VPC %s and region %s", *req.HostedZoneId, *req.VPC.VPCId, *req.VPC.VPCRegion)
@@ -65,12 +66,12 @@ func resourceAwsRoute53VPCAssociationAuthorizationCreate(d *schema.ResourceData,
 	d.SetId(fmt.Sprintf("%s:%s", *req.HostedZoneId, *req.VPC.VPCId))
 	d.Set("vpc_region", req.VPC.VPCRegion)
 
-	return resourceAwsRoute53VPCAssociationAuthorizationRead(d, meta)
+	return resourceAwsRoute53ZoneAssociationAuthorizationRead(d, meta)
 }
 
-func resourceAwsRoute53VPCAssociationAuthorizationRead(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsRoute53ZoneAssociationAuthorizationRead(d *schema.ResourceData, meta interface{}) error {
 	r53 := meta.(*AWSClient).r53conn
-	zone_id, vpc_id := resourceAwsRoute53VPCAssociationAuthorizationParseId(d.Id())
+	zone_id, vpc_id := resourceAwsRoute53ZoneAssociationAuthorizationParseId(d.Id())
 	req := route53.ListVPCAssociationAuthorizationsInput{HostedZoneId: aws.String(zone_id)}
 	for {
 		res, err := r53.ListVPCAssociationAuthorizations(&req)
@@ -97,9 +98,9 @@ func resourceAwsRoute53VPCAssociationAuthorizationRead(d *schema.ResourceData, m
 	return nil
 }
 
-func resourceAwsRoute53VPCAssociationAuthorizationDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsRoute53ZoneAssociationAuthorizationDelete(d *schema.ResourceData, meta interface{}) error {
 	r53 := meta.(*AWSClient).r53conn
-	zone_id, vpc_id := resourceAwsRoute53VPCAssociationAuthorizationParseId(d.Id())
+	zone_id, vpc_id := resourceAwsRoute53ZoneAssociationAuthorizationParseId(d.Id())
 	log.Printf("[DEBUG] Deleting Route53 Assocatiation Authorization for (%s) from vpc %s)",
 		zone_id, vpc_id)
 
@@ -119,9 +120,7 @@ func resourceAwsRoute53VPCAssociationAuthorizationDelete(d *schema.ResourceData,
 	return nil
 }
 
-func resourceAwsRoute53VPCAssociationAuthorizationParseId(id string) (zone_id, vpc_id string) {
+func resourceAwsRoute53ZoneAssociationAuthorizationParseId(id string) (string, string) {
 	parts := strings.SplitN(id, ":", 2)
-	zone_id = parts[0]
-	vpc_id = parts[1]
-	return
+	return parts[0], parts[1]
 }
