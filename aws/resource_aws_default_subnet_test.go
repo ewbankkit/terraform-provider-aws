@@ -29,7 +29,7 @@ func TestAccAWSDefaultSubnet_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"aws_default_subnet.foo", "tags.%", "1"),
 					resource.TestCheckResourceAttr(
-						"aws_default_subnet.foo", "tags.Name", "Default subnet for us-west-2a"),
+						"aws_default_subnet.foo", "tags.Name", "terraform-testacc-default-subnet"),
 				),
 			},
 		},
@@ -42,14 +42,10 @@ func testAccCheckAWSDefaultSubnetDestroy(s *terraform.State) error {
 }
 
 const testAccAWSDefaultSubnetConfigBasic = `
-provider "aws" {
-    region = "us-west-2"
-}
-
 resource "aws_default_subnet" "foo" {
-	availability_zone = "us-west-2a"
-	tags {
-		Name = "Default subnet for us-west-2a"
-	}
+  availability_zone = "us-west-2a"
+  tags {
+    Name = "terraform-testacc-default-subnet"
+  }
 }
 `
