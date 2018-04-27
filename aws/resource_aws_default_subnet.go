@@ -71,7 +71,6 @@ func resourceAwsDefaultSubnetCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	d.SetId(aws.StringValue(resp.Subnets[0].SubnetId))
-
 	return resourceAwsSubnetUpdate(d, meta)
 }
 

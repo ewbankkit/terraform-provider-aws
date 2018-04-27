@@ -101,8 +101,8 @@ func resourceAwsSubnetCreate(d *schema.ResourceData, meta interface{}) error {
 	// Wait for the Subnet to become available
 	log.Printf("[DEBUG] Waiting for subnet (%s) to become available", *subnet.SubnetId)
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{"pending"},
-		Target:  []string{"available"},
+		Pending: []string{ec2.SubnetStatePending},
+		Target:  []string{ec2.SubnetStateAvailable},
 		Refresh: SubnetStateRefreshFunc(conn, *subnet.SubnetId),
 		Timeout: 10 * time.Minute,
 	}
@@ -126,7 +126,7 @@ func resourceAwsSubnetRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidSubnetID.NotFound" {
+		if isAWSErr(err, "InvalidSubnetID.NotFound", "") {
 			// Update state to indicate the subnet no longer exists.
 			d.SetId("")
 			return nil
@@ -145,7 +145,7 @@ func resourceAwsSubnetRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("map_public_ip_on_launch", subnet.MapPublicIpOnLaunch)
 	d.Set("assign_ipv6_address_on_creation", subnet.AssignIpv6AddressOnCreation)
 	for _, a := range subnet.Ipv6CidrBlockAssociationSet {
-		if *a.Ipv6CidrBlockState.State == "associated" { //we can only ever have 1 IPv6 block associated at once
+		if aws.StringValue(a.Ipv6CidrBlockState.State) == ec2.SubnetCidrBlockStateCodeAssociated { //we can only ever have 1 IPv6 block associated at once
 			d.Set("ipv6_cidr_block_association_id", a.AssociationId)
 			d.Set("ipv6_cidr_block", a.Ipv6CidrBlock)
 			break
@@ -215,8 +215,8 @@ func resourceAwsSubnetUpdate(d *schema.ResourceData, meta interface{}) error {
 				"[DEBUG] Waiting for IPv6 CIDR (%s) to become disassociated",
 				d.Id())
 			stateConf := &resource.StateChangeConf{
-				Pending: []string{"disassociating", "associated"},
-				Target:  []string{"disassociated"},
+				Pending: []string{ec2.SubnetCidrBlockStateCodeDisassociating, ec2.SubnetCidrBlockStateCodeAssociated},
+				Target:  []string{ec2.SubnetCidrBlockStateCodeDisassociated},
 				Refresh: SubnetIpv6CidrStateRefreshFunc(conn, d.Id(), d.Get("ipv6_cidr_block_association_id").(string)),
 				Timeout: 3 * time.Minute,
 			}
@@ -245,8 +245,8 @@ func resourceAwsSubnetUpdate(d *schema.ResourceData, meta interface{}) error {
 			"[DEBUG] Waiting for IPv6 CIDR (%s) to become associated",
 			d.Id())
 		stateConf := &resource.StateChangeConf{
-			Pending: []string{"associating", "disassociated"},
-			Target:  []string{"associated"},
+			Pending: []string{ec2.SubnetCidrBlockStateCodeAssociating, ec2.SubnetCidrBlockStateCodeDisassociated},
+			Target:  []string{ec2.SubnetCidrBlockStateCodeAssociated},
 			Refresh: SubnetIpv6CidrStateRefreshFunc(conn, d.Id(), *resp.Ipv6CidrBlockAssociation.AssociationId),
 			Timeout: 3 * time.Minute,
 		}
@@ -332,7 +332,7 @@ func SubnetStateRefreshFunc(conn *ec2.EC2, id string) resource.StateRefreshFunc 
 			SubnetIds: []*string{aws.String(id)},
 		})
 		if err != nil {
-			if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidSubnetID.NotFound" {
+			if isAWSErr(err, "InvalidSubnetID.NotFound", "") {
 				resp = nil
 			} else {
 				log.Printf("Error on SubnetStateRefresh: %s", err)
@@ -358,7 +358,7 @@ func SubnetIpv6CidrStateRefreshFunc(conn *ec2.EC2, id string, associationId stri
 		}
 		resp, err := conn.DescribeSubnets(opts)
 		if err != nil {
-			if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidSubnetID.NotFound" {
+			if isAWSErr(err, "InvalidSubnetID.NotFound", "") {
 				resp = nil
 			} else {
 				log.Printf("Error on SubnetIpv6CidrStateRefreshFunc: %s", err)
