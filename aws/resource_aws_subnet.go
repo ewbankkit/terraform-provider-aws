@@ -25,6 +25,12 @@ func resourceAwsSubnet() *schema.Resource {
 		SchemaVersion: 1,
 		MigrateState:  resourceAwsSubnetMigrateState,
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(3 * time.Minute),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"vpc_id": {
 				Type:     schema.TypeString,
@@ -81,30 +87,22 @@ func resourceAwsSubnetCreate(d *schema.ResourceData, meta interface{}) error {
 		CidrBlock:        aws.String(d.Get("cidr_block").(string)),
 		VpcId:            aws.String(d.Get("vpc_id").(string)),
 	}
-
-	if v, ok := d.GetOk("ipv6_cidr_block"); ok {
-		createOpts.Ipv6CidrBlock = aws.String(v.(string))
-	}
-
-	var err error
 	resp, err := conn.CreateSubnet(createOpts)
-
 	if err != nil {
 		return fmt.Errorf("Error creating subnet: %s", err)
 	}
 
 	// Get the ID and store it
-	subnet := resp.Subnet
-	d.SetId(*subnet.SubnetId)
-	log.Printf("[INFO] Subnet ID: %s", *subnet.SubnetId)
+	d.SetId(aws.StringValue(resp.Subnet.SubnetId))
+	log.Printf("[INFO] Subnet ID: %s", d.Id())
 
 	// Wait for the Subnet to become available
-	log.Printf("[DEBUG] Waiting for subnet (%s) to become available", *subnet.SubnetId)
+	log.Printf("[DEBUG] Waiting for subnet (%s) to become available", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{ec2.SubnetStatePending},
 		Target:  []string{ec2.SubnetStateAvailable},
-		Refresh: SubnetStateRefreshFunc(conn, *subnet.SubnetId),
-		Timeout: 10 * time.Minute,
+		Refresh: SubnetStateRefreshFunc(conn, d.Id()),
+		Timeout: d.Timeout(schema.TimeoutCreate),
 	}
 
 	_, err = stateConf.WaitForState()
@@ -124,7 +122,6 @@ func resourceAwsSubnetRead(d *schema.ResourceData, meta interface{}) error {
 	resp, err := conn.DescribeSubnets(&ec2.DescribeSubnetsInput{
 		SubnetIds: []*string{aws.String(d.Id())},
 	})
-
 	if err != nil {
 		if isAWSErr(err, "InvalidSubnetID.NotFound", "") {
 			// Update state to indicate the subnet no longer exists.
@@ -189,9 +186,7 @@ func resourceAwsSubnetUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	// We have to be careful here to not go through a change of association if this is a new resource
-	// A New resource here would denote that the Update func is called by the Create func
-	if d.HasChange("ipv6_cidr_block") && !d.IsNewResource() {
+	if d.HasChange("ipv6_cidr_block") {
 		// We need to handle that we disassociate the IPv6 CIDR block before we try and associate the new one
 		// This could be an issue as, we could error out when we try and add the new one
 		// We may need to roll back the state and reattach the old one if this is the case
@@ -218,7 +213,7 @@ func resourceAwsSubnetUpdate(d *schema.ResourceData, meta interface{}) error {
 				Pending: []string{ec2.SubnetCidrBlockStateCodeDisassociating, ec2.SubnetCidrBlockStateCodeAssociated},
 				Target:  []string{ec2.SubnetCidrBlockStateCodeDisassociated},
 				Refresh: SubnetIpv6CidrStateRefreshFunc(conn, d.Id(), d.Get("ipv6_cidr_block_association_id").(string)),
-				Timeout: 3 * time.Minute,
+				Timeout: d.Timeout(schema.TimeoutUpdate),
 			}
 			if _, err := stateConf.WaitForState(); err != nil {
 				return fmt.Errorf(
@@ -248,7 +243,7 @@ func resourceAwsSubnetUpdate(d *schema.ResourceData, meta interface{}) error {
 			Pending: []string{ec2.SubnetCidrBlockStateCodeAssociating, ec2.SubnetCidrBlockStateCodeDisassociated},
 			Target:  []string{ec2.SubnetCidrBlockStateCodeAssociated},
 			Refresh: SubnetIpv6CidrStateRefreshFunc(conn, d.Id(), *resp.Ipv6CidrBlockAssociation.AssociationId),
-			Timeout: 3 * time.Minute,
+			Timeout: d.Timeout(schema.TimeoutUpdate),
 		}
 		if _, err := stateConf.WaitForState(); err != nil {
 			return fmt.Errorf(
@@ -294,7 +289,7 @@ func resourceAwsSubnetDelete(d *schema.ResourceData, meta interface{}) error {
 	wait := resource.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"destroyed"},
-		Timeout:    10 * time.Minute,
+		Timeout:    d.Timeout(schema.TimeoutDelete),
 		MinTimeout: 1 * time.Second,
 		Refresh: func() (interface{}, string, error) {
 			_, err := conn.DeleteSubnet(req)

@@ -33,6 +33,7 @@ func resourceAwsDefaultSubnet() *schema.Resource {
 	// ipv6_cidr_block is a computed value for Default Subnets
 	dsubnet.Schema["ipv6_cidr_block"] = &schema.Schema{
 		Type:     schema.TypeString,
+		Optional: true,
 		Computed: true,
 	}
 	// map_public_ip_on_launch is a computed value for Default Subnets
@@ -44,6 +45,7 @@ func resourceAwsDefaultSubnet() *schema.Resource {
 	// assign_ipv6_address_on_creation is a computed value for Default Subnets
 	dsubnet.Schema["assign_ipv6_address_on_creation"] = &schema.Schema{
 		Type:     schema.TypeBool,
+		Optional: true,
 		Computed: true,
 	}
 

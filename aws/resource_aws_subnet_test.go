@@ -200,6 +200,31 @@ func testAccCheckAwsSubnetIpv6AfterUpdate(t *testing.T, subnet *ec2.Subnet) reso
 	}
 }
 
+func testAccCheckAwsSubnetIpv6(sn *ec2.Subnet, expectedIpv6, expectedAssignIpv6OnCreation bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		for _, a := range sn.Ipv6CidrBlockAssociationSet {
+			if *a.Ipv6CidrBlockState.State == ec2.SubnetCidrBlockStateCodeAssociated {
+				if !expectedIpv6 {
+					return fmt.Errorf("Unexpected IPv6 CIDR block: %s", *a.Ipv6CidrBlock)
+				}
+				if *sn.AssignIpv6AddressOnCreation != expectedAssignIpv6OnCreation {
+					return fmt.Errorf("Unexpected Assign IPv6 Address On Creation: %v", *sn.AssignIpv6AddressOnCreation)
+				}
+				return nil
+			}
+		}
+
+		if expectedIpv6 {
+			return fmt.Errorf("IPv6 CIDR block not found")
+		}
+		if *sn.AssignIpv6AddressOnCreation != expectedAssignIpv6OnCreation {
+			return fmt.Errorf("Unexpected Assign IPv6 Address On Creation: %v", *sn.AssignIpv6AddressOnCreation)
+		}
+
+		return nil
+	}
+}
+
 func testAccCheckAwsSubnetNotRecreated(t *testing.T,
 	before, after *ec2.Subnet) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

@@ -51,6 +51,15 @@ The following attributes are exported:
 * `ipv6_association_id` - The association ID for the IPv6 CIDR block.
 * `ipv6_cidr_block` - The IPv6 CIDR block.
 
+## Timeouts
+
+`aws_subnet` provides the following
+[Timeouts](/docs/configuration/resources.html#timeouts) configuration options:
+
+- `create` - (Default `10 minutes`) Used for subnet creation
+- `delete` - (Default `10 minutes`) Used for subnet deletion
+- `update` - (Default `3 minutes`) Used for subnet updates
+
 ## Import
 
 Subnets can be imported using the `subnet id`, e.g.
