@@ -55,6 +55,12 @@ func resourceAwsDefaultVpcCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.SetId(aws.StringValue(resp.Vpcs[0].VpcId))
+	if a := awsVpcFindIpv6CidrBlockAssociation(resp.Vpcs[0]); a != nil {
+		d.Set("assign_generated_ipv6_cidr_block", true)
+	} else {
+		d.Set("assign_generated_ipv6_cidr_block", false)
+	}
+
 	return resourceAwsVpcUpdate(d, meta)
 }
 
