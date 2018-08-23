@@ -241,8 +241,21 @@ func resourceAwsDynamoDbTable() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"enabled": {
 							Type:     schema.TypeBool,
-							Required: true,
-							ForceNew: true,
+							Optional: true,
+							Default:  false,
+						},
+						"sse_type": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  dynamodb.SSETypeAes256,
+							ValidateFunc: validation.StringInSlice([]string{
+								dynamodb.SSETypeAes256,
+								dynamodb.SSETypeKms,
+							}, false),
+						},
+						"kms_master_key_id": {
+							Type:     schema.TypeString,
+							Optional: true,
 						},
 					},
 				},
@@ -315,14 +328,9 @@ func resourceAwsDynamoDbTableCreate(d *schema.ResourceData, meta interface{}) er
 		}
 	}
 
-	if v, ok := d.GetOk("server_side_encryption"); ok {
-		options := v.([]interface{})
-		if options[0] == nil {
-			return fmt.Errorf("At least one field is expected inside server_side_encryption")
-		}
-
-		s := options[0].(map[string]interface{})
-		req.SSESpecification = expandDynamoDbEncryptAtRestOptions(s)
+	if v, ok := d.GetOk("server_side_encryption"); ok && len(v.([]interface{})) > 0 {
+		sseOptions := v.([]interface{})
+		req.SSESpecification = expandDynamoDbEncryptAtRestOptions(sseOptions[0].(map[string]interface{}))
 	}
 
 	var output *dynamodb.CreateTableOutput
@@ -456,6 +464,25 @@ func resourceAwsDynamoDbTableUpdate(d *schema.ResourceData, meta interface{}) er
 
 		if err := waitForDynamoDbTableToBeActive(d.Id(), d.Timeout(schema.TimeoutUpdate), conn); err != nil {
 			return fmt.Errorf("Error waiting for DynamoDB Table op: %s", err)
+		}
+	}
+
+	if d.HasChange("server_side_encryption") {
+		if v, ok := d.GetOk("server_side_encryption"); ok && len(v.([]interface{})) > 0 {
+			sseOptions := v.([]interface{})
+
+			input := &dynamodb.UpdateTableInput{
+				TableName:        aws.String(d.Id()),
+				SSESpecification: expandDynamoDbEncryptAtRestOptions(sseOptions[0].(map[string]interface{})),
+			}
+			_, err := conn.UpdateTable(input)
+			if err != nil {
+				return err
+			}
+
+			if err := waitForDynamoDbSSEUpdateToBeCompleted(d.Id(), d.Timeout(schema.TimeoutUpdate), conn); err != nil {
+				return fmt.Errorf("Error waiting for DynamoDB Table SSE update: %s", err)
+			}
 		}
 	}
 
@@ -867,6 +894,34 @@ func waitForDynamoDbTtlUpdateToBeCompleted(tableName string, toEnable bool, conn
 	}
 
 	_, err := stateConf.WaitForState()
+	return err
+}
+
+func waitForDynamoDbSSEUpdateToBeCompleted(tableName string, timeout time.Duration, conn *dynamodb.DynamoDB) error {
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{
+			dynamodb.SSEStatusDisabling,
+			dynamodb.SSEStatusEnabling,
+			dynamodb.SSEStatusUpdating,
+		},
+		Target: []string{
+			dynamodb.SSEStatusDisabled,
+			dynamodb.SSEStatusEnabled,
+		},
+		Timeout: timeout,
+		Refresh: func() (interface{}, string, error) {
+			result, err := conn.DescribeTable(&dynamodb.DescribeTableInput{
+				TableName: aws.String(tableName),
+			})
+			if err != nil {
+				return nil, "", err
+			}
+
+			return result, aws.StringValue(result.Table.SSEDescription.Status), nil
+		},
+	}
+	_, err := stateConf.WaitForState()
+
 	return err
 }
 
