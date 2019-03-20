@@ -126,3 +126,49 @@ func TestSuppressRoute53ZoneNameWithTrailingDot(t *testing.T) {
 		}
 	}
 }
+
+func TestSuppressStringsEqualFold(t *testing.T) {
+	testCases := []struct {
+		old        string
+		new        string
+		equivalent bool
+	}{
+		{
+			old:        "ABC",
+			new:        "ABC",
+			equivalent: true,
+		},
+		{
+			old:        "ABC",
+			new:        "abC",
+			equivalent: true,
+		},
+		{
+			old:        "ABC",
+			new:        "ab",
+			equivalent: false,
+		},
+		{
+			old:        "",
+			new:        "ABC",
+			equivalent: false,
+		},
+		{
+			old:        "ABC",
+			new:        "",
+			equivalent: false,
+		},
+	}
+
+	for i, tc := range testCases {
+		value := suppressStringsEqualFold("test_property", tc.old, tc.new, nil)
+
+		if tc.equivalent && !value {
+			t.Fatalf("expected test case %d to be equivalent", i)
+		}
+
+		if !tc.equivalent && value {
+			t.Fatalf("expected test case %d to not be equivalent", i)
+		}
+	}
+}

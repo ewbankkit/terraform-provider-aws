@@ -136,19 +136,35 @@ func resourceAwsDmsEndpoint() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"auth_type": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Default:  "PASSWORD",
+							Type:             schema.TypeString,
+							Optional:         true,
+							Default:          dms.AuthTypeValuePassword,
+							DiffSuppressFunc: suppressStringsEqualFold,
+							ValidateFunc: validation.StringInSlice([]string{
+								dms.AuthTypeValueNo,
+								dms.AuthTypeValuePassword,
+							}, true),
 						},
 						"auth_mechanism": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Default:  "DEFAULT",
+							Type:             schema.TypeString,
+							Optional:         true,
+							Default:          dms.AuthMechanismValueDefault,
+							DiffSuppressFunc: suppressStringsEqualFold,
+							ValidateFunc: validation.StringInSlice([]string{
+								dms.AuthMechanismValueDefault,
+								dms.AuthMechanismValueMongodbCr,
+								dms.AuthMechanismValueScramSha1,
+							}, true),
 						},
 						"nesting_level": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Default:  "NONE",
+							Type:             schema.TypeString,
+							Optional:         true,
+							Default:          dms.NestingLevelValueNone,
+							DiffSuppressFunc: suppressStringsEqualFold,
+							ValidateFunc: validation.StringInSlice([]string{
+								dms.NestingLevelValueNone,
+								dms.NestingLevelValueOne,
+							}, true),
 						},
 						"extract_doc_id": {
 							Type:     schema.TypeString,

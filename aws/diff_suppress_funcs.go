@@ -114,3 +114,8 @@ func suppressRoute53ZoneNameWithTrailingDot(k, old, new string, d *schema.Resour
 	}
 	return strings.TrimSuffix(old, ".") == strings.TrimSuffix(new, ".")
 }
+
+// suppressStringsEqualFold suppresses differences between two strings that are equal under Unicode case-folding.
+func suppressStringsEqualFold(k, old, new string, d *schema.ResourceData) bool {
+	return strings.EqualFold(old, new)
+}
