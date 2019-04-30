@@ -609,3 +609,26 @@ func flattenDmsS3Settings(settings *dms.S3Settings) []map[string]interface{} {
 
 	return []map[string]interface{}{m}
 }
+
+func parseDmsEndpointExtraConnectionAttributes(s string) map[string]string {
+	// Format is "Key1=Value1;Key2=Value2".
+	m := map[string]string{}
+	for s != "" {
+		key := s
+		if i := strings.Index(key, ";"); i >= 0 {
+			key, s = key[:i], key[i+1:]
+		} else {
+			s = ""
+		}
+		if key == "" {
+			continue
+		}
+		value := ""
+		if i := strings.Index(key, "="); i >= 0 {
+			key, value = key[:i], key[i+1:]
+		}
+		m[key] = value
+	}
+
+	return m
+}

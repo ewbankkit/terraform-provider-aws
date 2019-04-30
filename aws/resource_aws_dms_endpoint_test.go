@@ -2,6 +2,7 @@ package aws
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -684,4 +685,49 @@ resource "aws_dms_endpoint" "dms_endpoint" {
 	username = "tftestupdate"
 }
 `, randId)
+}
+
+func TestParseDmsEndpointExtraConnectionAttributes(t *testing.T) {
+	cases := []struct {
+		Input  string
+		Output map[string]string
+	}{
+		{
+			Input:  "",
+			Output: map[string]string{},
+		},
+		{
+			Input: "Key2=Value2;Key1=Value1",
+			Output: map[string]string{
+				"Key1": "Value1",
+				"Key2": "Value2",
+			},
+		},
+		{
+			Input: "Key2=;;Key1=Value1;=Value3;",
+			Output: map[string]string{
+				"Key1": "Value1",
+				"Key2": "",
+				"":     "Value3",
+			},
+		},
+		{
+			Input: "bucketFolder=data/dms;bucketName=bucket_name;compressionType=GZIP;csvDelimiter=,;csvRowDelimiter=\\n;dataFormat=parquet;",
+			Output: map[string]string{
+				"bucketFolder":    "data/dms",
+				"bucketName":      "bucket_name",
+				"compressionType": "GZIP",
+				"csvDelimiter":    ",",
+				"csvRowDelimiter": "\\n",
+				"dataFormat":      "parquet",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		output := parseDmsEndpointExtraConnectionAttributes(tc.Input)
+		if !reflect.DeepEqual(output, tc.Output) {
+			t.Fatalf("Got:\n\n%#v\n\nExpected:\n\n%#v", output, tc.Output)
+		}
+	}
 }
