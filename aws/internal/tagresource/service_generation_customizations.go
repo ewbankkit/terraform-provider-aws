@@ -27,6 +27,14 @@ if isAWSErr(err, "InvalidParameterException", "The specified cluster is inactive
 	continue
 }
 `
+
+	case "route53":
+		return `
+if isAWSErr(err, "NoSuchHostedZone", "") {
+	continue
+}
+`
+
 	default:
 		return ""
 	}
