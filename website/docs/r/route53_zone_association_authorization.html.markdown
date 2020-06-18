@@ -1,7 +1,7 @@
 ---
+subcategory: "Route53"
 layout: "aws"
 page_title: "AWS: aws_route53_zone_association_authorization"
-sidebar_current: "docs-aws-resource-route53-zone-association-authorization"
 description: |-
   Provides a Route53 private Hosted Zone to VPC association authorization resource.
 ---

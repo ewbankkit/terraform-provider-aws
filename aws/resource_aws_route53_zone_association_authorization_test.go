@@ -4,26 +4,23 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccAWSRoute53ZoneAssociationAuthorization_basic(t *testing.T) {
-	var zone route53.HostedZone
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRoute53ZoneAssociationAuthorizationDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccRoute53ZoneAssociationAuthorizationConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRoute53ZoneAssociationAuthorizationExists("aws_route53_zone_association_authorization.foo", &zone),
+					testAccCheckRoute53ZoneAssociationAuthorizationExists("aws_route53_zone_association_authorization.foo"),
 				),
 			},
 		},
@@ -63,13 +60,13 @@ func testAccCheckRoute53ZoneAssociationAuthorizationDestroyWithProvider(s *terra
 	return nil
 }
 
-func testAccCheckRoute53ZoneAssociationAuthorizationExists(n string, zone *route53.HostedZone) resource.TestCheckFunc {
+func testAccCheckRoute53ZoneAssociationAuthorizationExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		return testAccCheckRoute53ZoneAssociationAuthorizationExistsWithProvider(s, n, zone, testAccProvider)
+		return testAccCheckRoute53ZoneAssociationAuthorizationExistsWithProvider(s, n, testAccProvider)
 	}
 }
 
-func testAccCheckRoute53ZoneAssociationAuthorizationExistsWithProvider(s *terraform.State, n string, zone *route53.HostedZone, provider *schema.Provider) error {
+func testAccCheckRoute53ZoneAssociationAuthorizationExistsWithProvider(s *terraform.State, n string, provider *schema.Provider) error {
 	rs, ok := s.RootModule().Resources[n]
 	if !ok {
 		return fmt.Errorf("Not found: %s", n)
