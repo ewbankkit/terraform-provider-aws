@@ -33,16 +33,17 @@ func TestAccAWSInstanceDataSource_basic(t *testing.T) {
 }
 
 func TestAccAWSInstanceDataSource_tags(t *testing.T) {
-	rInt := acctest.RandInt()
 	resourceName := "aws_instance.test"
 	datasourceName := "data.aws_instance.test"
+	rName := acctest.RandomWithPrefix("tf-acc-test")
+	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccInstanceDataSourceConfig_Tags(rInt),
+				Config: testAccInstanceDataSourceConfigTags(rName, rInt),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(datasourceName, "ami", resourceName, "ami"),
 					resource.TestCheckResourceAttrPair(datasourceName, "tags.%", resourceName, "tags.%"),
@@ -500,26 +501,30 @@ data "aws_instance" "test" {
 }
 
 // Use the tags attribute to filter
-func testAccInstanceDataSourceConfig_Tags(rInt int) string {
-	return fmt.Sprintf(`
+func testAccInstanceDataSourceConfigTags(rName string, rInt int) string {
+	return composeConfig(
+		testAccLatestAmazonLinuxHvmEbsAmiConfig(),
+		testAccAwsInstanceVpcConfig(rName, false),
+		testAccAvailableEc2InstanceTypeForRegion("t3.micro", "t2.micro"),
+		fmt.Sprintf(`
 resource "aws_instance" "test" {
-  # us-west-2
-  ami           = "ami-4fccb37f"
-  instance_type = "m1.small"
+  ami           = data.aws_ami.amzn-ami-minimal-hvm-ebs.id
+  instance_type = data.aws_ec2_instance_type_offering.available.instance_type
+  subnet_id     = aws_subnet.test.id
 
   tags = {
-    Name     = "HelloWorld"
-    TestSeed = "%[1]d"
+    Name     = %[1]q
+    TestSeed = "%[2]d"
   }
 }
 
 data "aws_instance" "test" {
   instance_tags = {
-    Name     = "${aws_instance.test.tags["Name"]}"
-    TestSeed = "%[1]d"
+    Name     = aws_instance.test.tags["Name"]
+    TestSeed = "%[2]d"
   }
 }
-`, rInt)
+`, rName, rInt))
 }
 
 // filter on tag, populate more attributes
