@@ -160,6 +160,28 @@ func TestAccAWSSubnet_basic(t *testing.T) {
 	})
 }
 
+func TestAccAWSSubnet_disappears(t *testing.T) {
+	var v ec2.Subnet
+	resourceName := "aws_subnet.test"
+	rName := acctest.RandomWithPrefix("tf-acc-test")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccSubnetConfigBasic(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSubnetExists(resourceName, &v),
+					testAccCheckResourceDisappears(testAccProvider, resourceAwsSubnet(), resourceName),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
 func TestAccAWSSubnet_ignoreTags(t *testing.T) {
 	var providers []*schema.Provider
 	var subnet ec2.Subnet
