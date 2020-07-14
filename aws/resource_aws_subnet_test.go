@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/hashicorp/go-multierror"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -125,18 +126,7 @@ func testSweepSubnets(region string) error {
 func TestAccAWSSubnet_basic(t *testing.T) {
 	var v ec2.Subnet
 	resourceName := "aws_subnet.test"
-
-	testCheck := func(*terraform.State) error {
-		if aws.StringValue(v.CidrBlock) != "10.1.1.0/24" {
-			return fmt.Errorf("bad cidr: %s", aws.StringValue(v.CidrBlock))
-		}
-
-		if !aws.BoolValue(v.MapPublicIpOnLaunch) {
-			return fmt.Errorf("bad MapPublicIpOnLaunch: %t", aws.BoolValue(v.MapPublicIpOnLaunch))
-		}
-
-		return nil
-	}
+	rName := acctest.RandomWithPrefix("tf-acc-test")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -145,17 +135,20 @@ func TestAccAWSSubnet_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSubnetConfig,
+				Config: testAccSubnetConfigBasic(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSubnetExists(resourceName, &v),
-					testCheck,
-					// ipv6 should be empty if disabled so we can still use the property in conditionals
-					resource.TestCheckResourceAttr(resourceName, "ipv6_cidr_block", ""),
 					testAccMatchResourceAttrRegionalARN(resourceName, "arn", "ec2", regexp.MustCompile("subnet/subnet-.+$")),
-					testAccCheckResourceAttrAccountID(resourceName, "owner_id"),
+					resource.TestCheckResourceAttr(resourceName, "assign_ipv6_address_on_creation", "false"),
 					resource.TestCheckResourceAttrSet(resourceName, "availability_zone"),
 					resource.TestCheckResourceAttrSet(resourceName, "availability_zone_id"),
+					// ipv6 should be empty if disabled so we can still use the property in conditionals
+					resource.TestCheckResourceAttr(resourceName, "ipv6_cidr_block_association_id", ""),
+					resource.TestCheckResourceAttr(resourceName, "ipv6_cidr_block", ""),
+					resource.TestCheckResourceAttr(resourceName, "map_public_ip_on_launch", "false"),
 					resource.TestCheckResourceAttr(resourceName, "outpost_arn", ""),
+					testAccCheckResourceAttrAccountID(resourceName, "owner_id"),
+					resource.TestCheckResourceAttr(resourceName, "tags.%", "0"),
 				),
 			},
 			{
@@ -171,6 +164,7 @@ func TestAccAWSSubnet_ignoreTags(t *testing.T) {
 	var providers []*schema.Provider
 	var subnet ec2.Subnet
 	resourceName := "aws_subnet.test"
+	rName := acctest.RandomWithPrefix("tf-acc-test")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -178,7 +172,7 @@ func TestAccAWSSubnet_ignoreTags(t *testing.T) {
 		CheckDestroy:      testAccCheckVpcDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSubnetConfig,
+				Config: testAccSubnetConfigBasic(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSubnetExists(resourceName, &subnet),
 					testAccCheckSubnetUpdateTags(&subnet, nil, map[string]string{"ignorekey1": "ignorevalue1"}),
@@ -186,11 +180,11 @@ func TestAccAWSSubnet_ignoreTags(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config:   testAccProviderConfigIgnoreTagsKeyPrefixes1("ignorekey") + testAccSubnetConfig,
+				Config:   composeConfig(testAccProviderConfigIgnoreTagsKeyPrefixes1("ignorekey"), testAccSubnetConfigBasic(rName)),
 				PlanOnly: true,
 			},
 			{
-				Config:   testAccProviderConfigIgnoreTagsKeys1("ignorekey1") + testAccSubnetConfig,
+				Config:   composeConfig(testAccProviderConfigIgnoreTagsKeys1("ignorekey1"), testAccSubnetConfigBasic(rName)),
 				PlanOnly: true,
 			},
 		},
@@ -426,23 +420,22 @@ func testAccCheckSubnetUpdateTags(subnet *ec2.Subnet, oldTags, newTags map[strin
 	}
 }
 
-const testAccSubnetConfig = `
+func testAccSubnetConfigBasic(rName string) string {
+	return fmt.Sprintf(`
 resource "aws_vpc" "test" {
-	cidr_block = "10.1.0.0/16"
-	tags = {
-		Name = "terraform-testacc-subnet"
-	}
+  cidr_block = "10.1.0.0/16"
+
+  tags = {
+    Name = %[1]q
+  }
 }
 
 resource "aws_subnet" "test" {
-	cidr_block = "10.1.1.0/24"
-	vpc_id = "${aws_vpc.test.id}"
-	map_public_ip_on_launch = true
-	tags = {
-		Name = "tf-acc-subnet"
-	}
+  cidr_block = "10.1.1.0/24"
+  vpc_id     = aws_vpc.test.id
 }
-`
+`, rName)
+}
 
 const testAccSubnetConfigPreIpv6 = `
 resource "aws_vpc" "test" {
