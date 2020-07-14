@@ -339,6 +339,47 @@ func TestAccAWSSubnet_outpost(t *testing.T) {
 	})
 }
 
+func TestAccAWSSubnet_MapPublicIpOnLaunch(t *testing.T) {
+	var v ec2.Subnet
+	resourceName := "aws_subnet.test"
+	rName := acctest.RandomWithPrefix("tf-acc-test")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:      func() { testAccPreCheck(t) },
+		IDRefreshName: resourceName,
+		Providers:     testAccProviders,
+		CheckDestroy:  testAccCheckSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccSubnetConfigMapPublicIpOnLaunch(rName, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSubnetExists(resourceName, &v),
+					resource.TestCheckResourceAttr(resourceName, "map_public_ip_on_launch", "true"),
+				),
+			},
+			{
+				Config: testAccSubnetConfigMapPublicIpOnLaunch(rName, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSubnetExists(resourceName, &v),
+					resource.TestCheckResourceAttr(resourceName, "map_public_ip_on_launch", "false"),
+				),
+			},
+			{
+				Config: testAccSubnetConfigMapPublicIpOnLaunch(rName, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSubnetExists(resourceName, &v),
+					resource.TestCheckResourceAttr(resourceName, "map_public_ip_on_launch", "true"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckAwsSubnetIpv6BeforeUpdate(subnet *ec2.Subnet) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if subnet.Ipv6CidrBlockAssociationSet == nil {
@@ -585,4 +626,27 @@ resource "aws_subnet" "test" {
   }
 }
 `
+}
+
+func testAccSubnetConfigMapPublicIpOnLaunch(rName string, mapPublicIpOnLaunch bool) string {
+	return fmt.Sprintf(`
+resource "aws_vpc" "test" {
+  cidr_block = "10.1.0.0/16"
+
+  tags = {
+    Name = %[1]q
+  }
+}
+
+resource "aws_subnet" "test" {
+  cidr_block = "10.1.1.0/24"
+  vpc_id     = aws_vpc.test.id
+
+  map_public_ip_on_launch = %[2]t
+
+  tags = {
+    Name = %[1]q
+  }
+}
+`, rName, mapPublicIpOnLaunch)
 }
