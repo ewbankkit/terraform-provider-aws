@@ -53,6 +53,7 @@ Defaults to `false`. Supported only for WebSocket APIs.
 * `logging_level` - (Optional) The logging level for the default route. Affects the log entries pushed to Amazon CloudWatch Logs.
 Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs. Terraform will only perform drift detection of its value when present in a configuration.
 * `throttling_burst_limit` - (Optional) The throttling burst limit for the default route.
+* `throttling_enabled` - (Optional) Whether throttling is enabled for the default route. Defaults to `true`.
 * `throttling_rate_limit` - (Optional) The throttling rate limit for the default route.
 
 The `route_settings` object supports the following:
@@ -64,6 +65,7 @@ Defaults to `false`. Supported only for WebSocket APIs.
 * `logging_level` - (Optional) The logging level for the route. Affects the log entries pushed to Amazon CloudWatch Logs.
 Valid values: `ERROR`, `INFO`, `OFF`. Defaults to `OFF`. Supported only for WebSocket APIs. Terraform will only perform drift detection of its value when present in a configuration.
 * `throttling_burst_limit` - (Optional) The throttling burst limit for the route.
+* `throttling_enabled` - (Optional) Whether throttling is enabled for the route. Defaults to `true`.
 * `throttling_rate_limit` - (Optional) The throttling rate limit for the route.
 
 ## Attribute Reference

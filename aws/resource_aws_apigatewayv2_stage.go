@@ -2,6 +2,7 @@ package aws
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 	"strings"
@@ -28,6 +29,7 @@ func resourceAwsApiGatewayV2Stage() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: resourceAwsApiGatewayV2StageImport,
 		},
+		CustomizeDiff: resourceAwsApiGatewayV2StageCustomizeDiff,
 
 		Schema: map[string]*schema.Schema{
 			"access_log_settings": {
@@ -86,18 +88,19 @@ func resourceAwsApiGatewayV2Stage() *schema.Resource {
 							Default:  false,
 						},
 						"logging_level": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-							ValidateFunc: validation.StringInSlice([]string{
-								apigatewayv2.LoggingLevelError,
-								apigatewayv2.LoggingLevelInfo,
-								apigatewayv2.LoggingLevelOff,
-							}, false),
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.StringInSlice(apigatewayv2.LoggingLevel_Values(), false),
 						},
 						"throttling_burst_limit": {
 							Type:     schema.TypeInt,
 							Optional: true,
+						},
+						"throttling_enabled": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
 						},
 						"throttling_rate_limit": {
 							Type:     schema.TypeFloat,
@@ -147,14 +150,10 @@ func resourceAwsApiGatewayV2Stage() *schema.Resource {
 							Default:  false,
 						},
 						"logging_level": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-							ValidateFunc: validation.StringInSlice([]string{
-								apigatewayv2.LoggingLevelError,
-								apigatewayv2.LoggingLevelInfo,
-								apigatewayv2.LoggingLevelOff,
-							}, false),
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.StringInSlice(apigatewayv2.LoggingLevel_Values(), false),
 						},
 						"route_key": {
 							Type:     schema.TypeString,
@@ -163,6 +162,11 @@ func resourceAwsApiGatewayV2Stage() *schema.Resource {
 						"throttling_burst_limit": {
 							Type:     schema.TypeInt,
 							Optional: true,
+						},
+						"throttling_enabled": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
 						},
 						"throttling_rate_limit": {
 							Type:     schema.TypeFloat,
@@ -436,6 +440,15 @@ func resourceAwsApiGatewayV2StageImport(d *schema.ResourceData, meta interface{}
 	return []*schema.ResourceData{d}, nil
 }
 
+func resourceAwsApiGatewayV2StageCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+	if diff.HasChange("default_route_settings.0.throttling_enabled") {
+		old, new := diff.GetChange("default_route_settings.0.throttling_enabled")
+		return fmt.Errorf("default_route_settings.0.throttling_enabled: %#v -> %#v", old, new)
+	}
+
+	return nil
+}
+
 func expandApiGatewayV2AccessLogSettings(vSettings []interface{}) *apigatewayv2.AccessLogSettings {
 	settings := &apigatewayv2.AccessLogSettings{}
 
@@ -482,11 +495,13 @@ func expandApiGatewayV2DefaultRouteSettings(vSettings []interface{}, protocolTyp
 	if vLoggingLevel, ok := mSettings["logging_level"].(string); ok && vLoggingLevel != "" && protocolType == apigatewayv2.ProtocolTypeWebsocket {
 		routeSettings.LoggingLevel = aws.String(vLoggingLevel)
 	}
-	if vThrottlingBurstLimit, ok := mSettings["throttling_burst_limit"].(int); ok {
-		routeSettings.ThrottlingBurstLimit = aws.Int64(int64(vThrottlingBurstLimit))
-	}
-	if vThrottlingRateLimit, ok := mSettings["throttling_rate_limit"].(float64); ok {
-		routeSettings.ThrottlingRateLimit = aws.Float64(vThrottlingRateLimit)
+	if vThrottlingEnabled, ok := mSettings["throttling_enabled"].(bool); ok && vThrottlingEnabled {
+		if vThrottlingBurstLimit, ok := mSettings["throttling_burst_limit"].(int); ok {
+			routeSettings.ThrottlingBurstLimit = aws.Int64(int64(vThrottlingBurstLimit))
+		}
+		if vThrottlingRateLimit, ok := mSettings["throttling_rate_limit"].(float64); ok {
+			routeSettings.ThrottlingRateLimit = aws.Float64(vThrottlingRateLimit)
+		}
 	}
 
 	return routeSettings
@@ -502,6 +517,7 @@ func flattenApiGatewayV2DefaultRouteSettings(routeSettings *apigatewayv2.RouteSe
 		"detailed_metrics_enabled": aws.BoolValue(routeSettings.DetailedMetricsEnabled),
 		"logging_level":            aws.StringValue(routeSettings.LoggingLevel),
 		"throttling_burst_limit":   int(aws.Int64Value(routeSettings.ThrottlingBurstLimit)),
+		"throttling_enabled":       routeSettings.ThrottlingBurstLimit != nil && routeSettings.ThrottlingRateLimit != nil,
 		"throttling_rate_limit":    aws.Float64Value(routeSettings.ThrottlingRateLimit),
 	}}
 }
@@ -523,11 +539,13 @@ func expandApiGatewayV2RouteSettings(vSettings *schema.Set, protocolType string)
 		if v, ok := mSettings["logging_level"].(string); ok && v != "" && protocolType == apigatewayv2.ProtocolTypeWebsocket {
 			routeSettings.LoggingLevel = aws.String(v)
 		}
-		if v, ok := mSettings["throttling_burst_limit"].(int); ok {
-			routeSettings.ThrottlingBurstLimit = aws.Int64(int64(v))
-		}
-		if v, ok := mSettings["throttling_rate_limit"].(float64); ok {
-			routeSettings.ThrottlingRateLimit = aws.Float64(v)
+		if v, ok := mSettings["throttling_enabled"].(bool); ok && v {
+			if v, ok := mSettings["throttling_burst_limit"].(int); ok {
+				routeSettings.ThrottlingBurstLimit = aws.Int64(int64(v))
+			}
+			if v, ok := mSettings["throttling_rate_limit"].(float64); ok {
+				routeSettings.ThrottlingRateLimit = aws.Float64(v)
+			}
 		}
 
 		settings[mSettings["route_key"].(string)] = routeSettings
@@ -546,6 +564,7 @@ func flattenApiGatewayV2RouteSettings(settings map[string]*apigatewayv2.RouteSet
 			"logging_level":            aws.StringValue(routeSetting.LoggingLevel),
 			"route_key":                k,
 			"throttling_burst_limit":   int(aws.Int64Value(routeSetting.ThrottlingBurstLimit)),
+			"throttling_enabled":       routeSetting.ThrottlingBurstLimit != nil && routeSetting.ThrottlingRateLimit != nil,
 			"throttling_rate_limit":    aws.Float64Value(routeSetting.ThrottlingRateLimit),
 		})
 	}

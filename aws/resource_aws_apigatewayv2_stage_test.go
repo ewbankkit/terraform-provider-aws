@@ -37,6 +37,7 @@ func TestAccAWSAPIGatewayV2Stage_basicWebSocket(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "OFF"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -82,6 +83,7 @@ func TestAccAWSAPIGatewayV2Stage_basicHttp(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", ""),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -127,6 +129,7 @@ func TestAccAWSAPIGatewayV2Stage_defaultHttpStage(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", ""),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -172,6 +175,7 @@ func TestAccAWSAPIGatewayV2Stage_autoDeployHttp(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", ""),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -196,6 +200,7 @@ func TestAccAWSAPIGatewayV2Stage_autoDeployHttp(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", ""),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					// The stage's DeploymentId attribute will be set asynchronously as deployments are done automatically.
 					// resource.TestCheckResourceAttrSet(resourceName, "deployment_id"),
@@ -269,6 +274,7 @@ func TestAccAWSAPIGatewayV2Stage_AccessLogSettings(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "OFF"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -300,6 +306,7 @@ func TestAccAWSAPIGatewayV2Stage_AccessLogSettings(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "OFF"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -338,6 +345,7 @@ func TestAccAWSAPIGatewayV2Stage_ClientCertificateIdAndDescription(t *testing.T)
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "OFF"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", "Test stage"),
@@ -368,6 +376,7 @@ func TestAccAWSAPIGatewayV2Stage_ClientCertificateIdAndDescription(t *testing.T)
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "OFF"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", "Test stage updated"),
@@ -407,6 +416,7 @@ func TestAccAWSAPIGatewayV2Stage_DefaultRouteSettingsWebSocket(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "ERROR"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "2222"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "8888"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -431,6 +441,7 @@ func TestAccAWSAPIGatewayV2Stage_DefaultRouteSettingsWebSocket(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "INFO"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "1111"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "9999"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -460,6 +471,7 @@ func TestAccAWSAPIGatewayV2Stage_DefaultRouteSettingsWebSocket(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "INFO"), // No drift detection if not configured
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -497,6 +509,7 @@ func TestAccAWSAPIGatewayV2Stage_DefaultRouteSettingsHttp(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", ""),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "2222"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "8888"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -521,6 +534,7 @@ func TestAccAWSAPIGatewayV2Stage_DefaultRouteSettingsHttp(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", ""),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "1111"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "9999"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -550,6 +564,7 @@ func TestAccAWSAPIGatewayV2Stage_DefaultRouteSettingsHttp(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", ""),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -588,6 +603,7 @@ func TestAccAWSAPIGatewayV2Stage_Deployment(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "OFF"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttrPair(resourceName, "deployment_id", deploymentResourceName, "id"),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -633,6 +649,7 @@ func TestAccAWSAPIGatewayV2Stage_RouteSettingsWebSocket(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "OFF"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -645,6 +662,7 @@ func TestAccAWSAPIGatewayV2Stage_RouteSettingsWebSocket(t *testing.T) {
 						"detailed_metrics_enabled": "false",
 						"route_key":                "$default",
 						"throttling_burst_limit":   "0",
+						"throttling_enabled":       "false",
 						"throttling_rate_limit":    "0",
 					}),
 					tfawsresource.TestCheckTypeSetElemNestedAttrs(resourceName, "route_settings.*", map[string]string{
@@ -653,6 +671,7 @@ func TestAccAWSAPIGatewayV2Stage_RouteSettingsWebSocket(t *testing.T) {
 						"logging_level":            "ERROR",
 						"route_key":                "$connect",
 						"throttling_burst_limit":   "2222",
+						"throttling_enabled":       "true",
 						"throttling_rate_limit":    "8888",
 					}),
 					resource.TestCheckResourceAttr(resourceName, "stage_variables.%", "0"),
@@ -672,6 +691,7 @@ func TestAccAWSAPIGatewayV2Stage_RouteSettingsWebSocket(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "OFF"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -684,6 +704,7 @@ func TestAccAWSAPIGatewayV2Stage_RouteSettingsWebSocket(t *testing.T) {
 						"detailed_metrics_enabled": "false",
 						"route_key":                "$default",
 						"throttling_burst_limit":   "1111",
+						"throttling_enabled":       "true",
 						"throttling_rate_limit":    "9999",
 					}),
 					tfawsresource.TestCheckTypeSetElemNestedAttrs(resourceName, "route_settings.*", map[string]string{
@@ -692,6 +713,7 @@ func TestAccAWSAPIGatewayV2Stage_RouteSettingsWebSocket(t *testing.T) {
 						"logging_level":            "INFO",
 						"route_key":                "$connect",
 						"throttling_burst_limit":   "0",
+						"throttling_enabled":       "true",
 						"throttling_rate_limit":    "0",
 					}),
 					tfawsresource.TestCheckTypeSetElemNestedAttrs(resourceName, "route_settings.*", map[string]string{
@@ -699,6 +721,7 @@ func TestAccAWSAPIGatewayV2Stage_RouteSettingsWebSocket(t *testing.T) {
 						"detailed_metrics_enabled": "false",
 						"route_key":                "$disconnect",
 						"throttling_burst_limit":   "0",
+						"throttling_enabled":       "false",
 						"throttling_rate_limit":    "0",
 					}),
 					resource.TestCheckResourceAttr(resourceName, "stage_variables.%", "0"),
@@ -723,6 +746,7 @@ func TestAccAWSAPIGatewayV2Stage_RouteSettingsWebSocket(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "OFF"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -760,6 +784,7 @@ func TestAccAWSAPIGatewayV2Stage_RouteSettingsHttp(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", ""),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -772,6 +797,7 @@ func TestAccAWSAPIGatewayV2Stage_RouteSettingsHttp(t *testing.T) {
 						"detailed_metrics_enabled": "true",
 						"route_key":                "$default",
 						"throttling_burst_limit":   "2222",
+						"throttling_enabled":       "true",
 						"throttling_rate_limit":    "8888",
 					}),
 					resource.TestCheckResourceAttr(resourceName, "stage_variables.%", "0"),
@@ -791,6 +817,7 @@ func TestAccAWSAPIGatewayV2Stage_RouteSettingsHttp(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", ""),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -803,6 +830,7 @@ func TestAccAWSAPIGatewayV2Stage_RouteSettingsHttp(t *testing.T) {
 						"detailed_metrics_enabled": "false",
 						"route_key":                "$default",
 						"throttling_burst_limit":   "1111",
+						"throttling_enabled":       "true",
 						"throttling_rate_limit":    "9999",
 					}),
 					resource.TestCheckResourceAttr(resourceName, "stage_variables.%", "0"),
@@ -827,6 +855,7 @@ func TestAccAWSAPIGatewayV2Stage_RouteSettingsHttp(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", ""),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -865,6 +894,7 @@ func TestAccAWSAPIGatewayV2Stage_StageVariables(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "OFF"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
 					testAccCheckAWSAPIGatewayV2StageExecutionARN(resourceName, "execution_arn", &apiId, &v),
@@ -895,6 +925,7 @@ func TestAccAWSAPIGatewayV2Stage_StageVariables(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "OFF"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -933,6 +964,7 @@ func TestAccAWSAPIGatewayV2Stage_Tags(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "OFF"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
 					testAccCheckAWSAPIGatewayV2StageExecutionARN(resourceName, "execution_arn", &apiId, &v),
@@ -963,6 +995,7 @@ func TestAccAWSAPIGatewayV2Stage_Tags(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.detailed_metrics_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.logging_level", "OFF"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_burst_limit", "0"),
+					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "default_route_settings.0.throttling_rate_limit", "0"),
 					resource.TestCheckResourceAttr(resourceName, "deployment_id", ""),
 					resource.TestCheckResourceAttr(resourceName, "description", ""),
@@ -1222,6 +1255,7 @@ resource "aws_apigatewayv2_stage" "test" {
     data_trace_enabled       = true
     detailed_metrics_enabled = true
     logging_level            = "ERROR"
+    throttling_enabled       = true
     throttling_burst_limit   = 2222
     throttling_rate_limit    = 8888
   }
@@ -1241,6 +1275,7 @@ resource "aws_apigatewayv2_stage" "test" {
     data_trace_enabled       = false
     detailed_metrics_enabled = true
     logging_level            = "INFO"
+    throttling_enabled       = true
     throttling_burst_limit   = 1111
     throttling_rate_limit    = 9999
   }
@@ -1259,6 +1294,7 @@ resource "aws_apigatewayv2_stage" "test" {
   default_route_settings {
     detailed_metrics_enabled = true
     throttling_burst_limit   = 2222
+    throttling_enabled       = true
     throttling_rate_limit    = 8888
   }
 }
@@ -1274,6 +1310,7 @@ resource "aws_apigatewayv2_stage" "test" {
   name   = %[1]q
 
   default_route_settings {
+    throttling_enabled     = true
     throttling_burst_limit = 1111
     throttling_rate_limit  = 9999
   }
@@ -1310,6 +1347,7 @@ resource "aws_apigatewayv2_stage" "test" {
     data_trace_enabled       = true
     detailed_metrics_enabled = true
     logging_level            = "ERROR"
+    throttling_enabled       = true
     throttling_burst_limit   = 2222
     throttling_rate_limit    = 8888
   }
@@ -1328,6 +1366,7 @@ resource "aws_apigatewayv2_stage" "test" {
   route_settings {
     route_key = "$default"
 
+    throttling_enabled     = true
     throttling_burst_limit = 1111
     throttling_rate_limit  = 9999
   }
@@ -1357,6 +1396,7 @@ resource "aws_apigatewayv2_stage" "test" {
     route_key = "$default"
 
     detailed_metrics_enabled = true
+    throttling_enabled       = true
     throttling_burst_limit   = 2222
     throttling_rate_limit    = 8888
   }
@@ -1375,6 +1415,7 @@ resource "aws_apigatewayv2_stage" "test" {
   route_settings {
     route_key = "$default"
 
+    throttling_enabled       = true
     throttling_burst_limit = 1111
     throttling_rate_limit  = 9999
   }
