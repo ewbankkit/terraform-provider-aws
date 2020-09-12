@@ -1,12 +1,10 @@
 package aws
 
 import (
-	"errors"
-	"strings"
-	"time"
+	"context"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/tfresource"
 )
 
 // Returns true if the error matches all these conditions:
@@ -34,42 +32,10 @@ func isAWSErrRequestFailureStatusCode(err error, statusCode int) bool {
 	return false
 }
 
+// retryOnAwsCode retries a function (for up to 2 minutes) when it returns the specified AWS error codes.
+// The retried function's return value is this function's return value.
 func retryOnAwsCode(code string, f func() (interface{}, error)) (interface{}, error) {
-	var resp interface{}
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
-		var err error
-		resp, err = f()
-		if err != nil {
-			awsErr, ok := err.(awserr.Error)
-			if ok && awsErr.Code() == code {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-	return resp, err
-}
-
-// RetryOnAwsCodes retries AWS error codes for one minute
-// Note: This function will be moved out of the aws package in the future.
-func RetryOnAwsCodes(codes []string, f func() (interface{}, error)) (interface{}, error) {
-	var resp interface{}
-	err := resource.Retry(1*time.Minute, func() *resource.RetryError {
-		var err error
-		resp, err = f()
-		if err != nil {
-			awsErr, ok := err.(awserr.Error)
-			if ok {
-				for _, code := range codes {
-					if awsErr.Code() == code {
-						return resource.RetryableError(err)
-					}
-				}
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-	return resp, err
+	return tfresource.RetryOnAWSErrorCodes(context.Background(), tfresource.RetryTimeout, func(_ context.Context) (interface{}, error) {
+		return f()
+	}, code)
 }
