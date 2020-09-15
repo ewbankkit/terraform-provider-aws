@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/keyvaluetags"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/service/ec2/finder"
 )
 
 func resourceAwsLaunchTemplate() *schema.Resource {
@@ -632,7 +633,7 @@ func resourceAwsLaunchTemplateCreate(d *schema.ResourceData, meta interface{}) e
 		ltName = resource.UniqueId()
 	}
 
-	launchTemplateData, err := buildLaunchTemplateData(d)
+	launchTemplateData, err := buildLaunchTemplateData(d, meta)
 	if err != nil {
 		return err
 	}
@@ -821,7 +822,7 @@ func resourceAwsLaunchTemplateUpdate(d *schema.ResourceData, meta interface{}) e
 	defaultVersion := d.Get("default_version").(int)
 
 	if d.HasChanges(updateKeys...) {
-		launchTemplateData, err := buildLaunchTemplateData(d)
+		launchTemplateData, err := buildLaunchTemplateData(d, meta)
 		if err != nil {
 			return err
 		}
@@ -1231,7 +1232,9 @@ func getTagSpecifications(t []*ec2.LaunchTemplateTagSpecification) []interface{}
 	return s
 }
 
-func buildLaunchTemplateData(d *schema.ResourceData) (*ec2.RequestLaunchTemplateData, error) {
+func buildLaunchTemplateData(d *schema.ResourceData, meta interface{}) (*ec2.RequestLaunchTemplateData, error) {
+	conn := meta.(*AWSClient).ec2conn
+
 	opts := &ec2.RequestLaunchTemplateData{
 		UserData: aws.String(d.Get("user_data").(string)),
 	}
@@ -1314,11 +1317,23 @@ func buildLaunchTemplateData(d *schema.ResourceData) (*ec2.RequestLaunchTemplate
 		}
 	}
 
-	if v, ok := d.GetOk("credit_specification"); ok && (strings.HasPrefix(instanceType, "t2") || strings.HasPrefix(instanceType, "t3")) {
-		cs := v.([]interface{})
+	if v, ok := d.GetOk("credit_specification"); ok && instanceType != "" {
+		instanceTypeInfo, err := finder.InstanceTypeInfo(conn, instanceType)
 
-		if len(cs) > 0 && cs[0] != nil {
-			opts.CreditSpecification = readCreditSpecificationFromConfig(cs[0].(map[string]interface{}))
+		if err != nil {
+			return nil, fmt.Errorf("error finding instance type (%s) details: %w", instanceType, err)
+		}
+
+		if instanceTypeInfo == nil {
+			return nil, fmt.Errorf("error finding instance type (%s) details", instanceType)
+		}
+
+		if aws.BoolValue(instanceTypeInfo.BurstablePerformanceSupported) {
+			cs := v.([]interface{})
+
+			if len(cs) > 0 && cs[0] != nil {
+				opts.CreditSpecification = readCreditSpecificationFromConfig(cs[0].(map[string]interface{}))
+			}
 		}
 	}
 
