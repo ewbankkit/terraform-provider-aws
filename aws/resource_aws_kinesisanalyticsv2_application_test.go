@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"testing"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/kinesisanalyticsv2"
@@ -39,23 +38,25 @@ func testSweepKinesisAnalyticsV2Application(region string) error {
 		}
 
 		for _, applicationSummary := range page.ApplicationSummaries {
-			arn := aws.StringValue(applicationSummary.ApplicationARN)
-			name := aws.StringValue(applicationSummary.ApplicationName)
+			r := resourceAwsKinesisAnalyticsV2Application()
+			d := r.Data(nil)
+			d.SetId(aws.StringValue(applicationSummary.ApplicationARN))
+			d.Set("name", applicationSummary.ApplicationName)
 
-			application, err := finder.ApplicationByName(conn, name)
+			// Need to Read first to fill in create_timestamp and name attributes
+			err := r.Read(d, client)
 
 			if err != nil {
-				sweeperErr := fmt.Errorf("error reading Kinesis Analytics v2 Application (%s): %w", arn, err)
 				log.Printf("[ERROR] %s", err)
-				sweeperErrs = multierror.Append(sweeperErrs, sweeperErr)
+				sweeperErrs = multierror.Append(sweeperErrs, err)
 				continue
 			}
 
-			r := resourceAwsKinesisAnalyticsV2Application()
-			d := r.Data(nil)
-			d.SetId(arn)
-			d.Set("create_timestamp", aws.TimeValue(application.CreateTimestamp).Format(time.RFC3339))
-			d.Set("name", name)
+			// In case it was already deleted
+			if d.Id() == "" {
+				continue
+			}
+
 			err = r.Delete(d, client)
 
 			if err != nil {
