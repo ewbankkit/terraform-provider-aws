@@ -18,6 +18,7 @@ func TestAccDataSourceAwsEc2CoipPool_Filter(t *testing.T) {
 				Config: testAccDataSourceAwsEc2CoipPoolDataSourceConfigFilter(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestMatchResourceAttr(dataSourceName, "local_gateway_route_table_id", regexp.MustCompile(`^lgw-rtb-`)),
+					resource.TestCheckResourceAttrSet(dataSourceName, "pool_arn"),
 					resource.TestMatchResourceAttr(dataSourceName, "pool_id", regexp.MustCompile(`^ipv4pool-coip-`)),
 					testCheckResourceAttrGreaterThanValue(dataSourceName, "pool_cidrs.#", "0"),
 				),
@@ -37,6 +38,7 @@ func TestAccDataSourceAwsEc2CoipPool_Id(t *testing.T) {
 				Config: testAccDataSourceAwsEc2CoipPoolDataSourceConfigId(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestMatchResourceAttr(dataSourceName, "local_gateway_route_table_id", regexp.MustCompile(`^lgw-rtb-`)),
+					resource.TestCheckResourceAttrSet(dataSourceName, "pool_arn"),
 					resource.TestMatchResourceAttr(dataSourceName, "pool_id", regexp.MustCompile(`^ipv4pool-coip-`)),
 					testCheckResourceAttrGreaterThanValue(dataSourceName, "pool_cidrs.#", "0"),
 				),
