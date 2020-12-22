@@ -59,7 +59,6 @@ func resourceAwsEbsVolume() *schema.Resource {
 			"multi_attach_enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				ForceNew: true,
 			},
 			"size": {
 				Type:         schema.TypeInt,
@@ -178,6 +177,10 @@ func resourceAWSEbsVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 
 		if d.HasChange("iops") {
 			params.Iops = aws.Int64(int64(d.Get("iops").(int)))
+		}
+
+		if d.HasChange("multi_attach_enabled") {
+			params.MultiAttachEnabled = aws.Bool(d.Get("multi_attach_enabled").(bool))
 		}
 
 		// "If no throughput value is specified, the existing value is retained."
@@ -401,8 +404,8 @@ func resourceAwsEbsVolumeCustomizeDiff(_ context.Context, diff *schema.ResourceD
 			}
 		}
 
-		// MultiAttachEnabled is supported with io1 volumes only.
-		if multiAttachEnabled && volumeType != ec2.VolumeTypeIo1 {
+		// MultiAttachEnabled is supported with io1 and io2 volumes only.
+		if multiAttachEnabled && volumeType != ec2.VolumeTypeIo1 && volumeType != ec2.VolumeTypeIo2 {
 			return fmt.Errorf("'multi_attach_enabled' must not be set when 'type' is '%s'", volumeType)
 		}
 
@@ -415,7 +418,16 @@ func resourceAwsEbsVolumeCustomizeDiff(_ context.Context, diff *schema.ResourceD
 
 		// Setting 'iops = 0' is a no-op if the volume type does not require Iops to be specified.
 		if diff.HasChange("iops") && volumeType != ec2.VolumeTypeIo1 && volumeType != ec2.VolumeTypeIo2 && iops == 0 {
-			return diff.Clear("iops")
+			if err := diff.Clear("iops"); err != nil {
+				return err
+			}
+		}
+
+		// MultiAttachEnabled can only be updated with io2 volumes.
+		if diff.HasChange("multi_attach_enabled") && volumeType != ec2.VolumeTypeIo2 {
+			if err := diff.ForceNew("multi_attach_enabled"); err != nil {
+				return err
+			}
 		}
 	}
 
