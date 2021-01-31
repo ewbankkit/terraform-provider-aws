@@ -3,7 +3,7 @@ package waiter
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/finder"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/error/finder"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/service"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/tfresource"
 )

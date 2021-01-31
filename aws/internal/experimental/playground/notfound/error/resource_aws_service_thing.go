@@ -5,10 +5,10 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/deleter"
-	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/finder"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/error/deleter"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/error/finder"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/error/waiter"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/service"
-	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/waiter"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/tfresource"
 )
 
