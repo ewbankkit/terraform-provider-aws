@@ -72,6 +72,9 @@ func (c *Service) DeleteThing(input *DeleteThingInput) (*DeleteThingOutput, erro
 	return &DeleteThingOutput{}, nil
 }
 
+// func (c *Service) GetThingsPages(input *GetThingInput, func(*GetThingsOutput, bool) bool) error {
+// }
+
 func New() *Service {
 	return &Service{}
 }

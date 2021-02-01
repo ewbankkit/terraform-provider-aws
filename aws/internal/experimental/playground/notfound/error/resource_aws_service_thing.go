@@ -62,6 +62,10 @@ func resourceAwsServiceThingDelete(d *schema.ResourceData, meta interface{}) err
 
 	err := deleter.ThingByID(conn, d.Id())
 
+	if tfresource.NotFound(err) {
+		return nil
+	}
+
 	if err != nil {
 		return fmt.Errorf("error deleting Service Thing (%s): %w", d.Id(), err)
 	}
