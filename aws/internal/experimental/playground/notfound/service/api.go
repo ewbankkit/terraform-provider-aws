@@ -26,6 +26,16 @@ type GetThingOutput struct {
 	Thing *Thing
 }
 
+type GetThingsInput struct {
+	ThingIds  []*string
+	NextToken *string
+}
+
+type GetThingsOutput struct {
+	Things    []*Thing
+	NextToken *string
+}
+
 type DeleteThingInput struct {
 	ThingId *string
 }
@@ -58,6 +68,14 @@ func (c *Service) GetThing(input *GetThingInput) (*GetThingOutput, error) {
 	c.n = c.n + 1
 
 	return &GetThingOutput{Thing: &Thing{ThingId: input.ThingId, Status: aws.String(status)}}, nil
+}
+
+func (c *Service) GetThings(input *GetThingsInput) (*GetThingsOutput, error) {
+	if len(input.ThingIds) == 0 {
+		return &GetThingsOutput{Things: []*Thing{}}, nil
+	}
+
+	return &GetThingsOutput{}, nil
 }
 
 func (c *Service) DeleteThing(input *DeleteThingInput) (*DeleteThingOutput, error) {
