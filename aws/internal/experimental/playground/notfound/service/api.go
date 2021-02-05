@@ -27,6 +27,7 @@ type GetThingOutput struct {
 }
 
 type GetThingsInput struct {
+	Filters   []*Filter
 	ThingIds  []*string
 	NextToken *string
 }
@@ -41,6 +42,8 @@ type DeleteThingInput struct {
 }
 
 type DeleteThingOutput struct{}
+
+type Filter struct{}
 
 func (c *Service) GetThing(input *GetThingInput) (*GetThingOutput, error) {
 	if aws.StringValue(input.ThingId) == EMPTY_RESULT_THING_ID {
@@ -75,7 +78,33 @@ func (c *Service) GetThings(input *GetThingsInput) (*GetThingsOutput, error) {
 		return &GetThingsOutput{Things: []*Thing{}}, nil
 	}
 
-	return &GetThingsOutput{}, nil
+	thingID := aws.StringValue(input.ThingIds[0])
+
+	if thingID == EMPTY_RESULT_THING_ID {
+		return &GetThingsOutput{}, nil
+	}
+
+	if thingID == ERRORING_THING_ID {
+		return nil, awserr.New(ErrCodeInvalidArgumentException, "erroring", nil)
+	}
+
+	if thingID == NOTFOUND_THING_ID {
+		return nil, awserr.New(ErrCodeResourceNotFoundException, "not found", nil)
+	}
+
+	var status string
+	switch c.n {
+	case 0:
+		status = ThingStatusReady
+	case 1:
+		status = ThingStatusDeleting
+	default:
+		status = ThingStatusDeleted
+	}
+
+	c.n = c.n + 1
+
+	return &GetThingsOutput{Things: []*Thing{{ThingId: aws.String(thingID), Status: aws.String(status)}}}, nil
 }
 
 func (c *Service) DeleteThing(input *DeleteThingInput) (*DeleteThingOutput, error) {
@@ -90,8 +119,22 @@ func (c *Service) DeleteThing(input *DeleteThingInput) (*DeleteThingOutput, erro
 	return &DeleteThingOutput{}, nil
 }
 
-// func (c *Service) GetThingsPages(input *GetThingInput, func(*GetThingsOutput, bool) bool) error {
-// }
+func (c *Service) GetThingsPages(input *GetThingsInput, fn func(*GetThingsOutput, bool) bool) error {
+	for {
+		output, err := c.GetThings(input)
+		if err != nil {
+			return err
+		}
+
+		lastPage := aws.StringValue(output.NextToken) == ""
+		if !fn(output, lastPage) || lastPage {
+			break
+		}
+
+		input.NextToken = output.NextToken
+	}
+	return nil
+}
 
 func New() *Service {
 	return &Service{}
