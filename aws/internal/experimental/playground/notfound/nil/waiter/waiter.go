@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/service"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/example"
 )
 
 const (
@@ -13,9 +13,9 @@ const (
 )
 
 // ThingDeleted waits for a Thing to be deleted.
-func ThingDeleted(conn *service.Service, thingID string) (*service.Thing, error) {
+func ThingDeleted(conn *example.Example, thingID string) (*example.Thing, error) {
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{service.ThingStatusReady, service.ThingStatusDeleting},
+		Pending: []string{example.ThingStatusReady, example.ThingStatusDeleting},
 		Target:  []string{},
 		Refresh: ThingStatus(conn, thingID),
 		Timeout: ThingDeletedTimeout,
@@ -23,7 +23,7 @@ func ThingDeleted(conn *service.Service, thingID string) (*service.Thing, error)
 
 	outputRaw, err := stateConf.WaitForState()
 
-	if v, ok := outputRaw.(*service.Thing); ok {
+	if v, ok := outputRaw.(*example.Thing); ok {
 		return v, err
 	}
 

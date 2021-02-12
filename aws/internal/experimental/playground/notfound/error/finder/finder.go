@@ -5,13 +5,13 @@ import (
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/namevaluesfilters"
-	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/service"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/example"
 )
 
 // ThingByID returns the thing corresponding to the specified ID.
 // Returns NotFoundError if no thing is found.
-// func ThingByID(conn *service.Service, thingID string) (*service.Thing, error) {
-// 	input := &service.GetThingInput{
+// func ThingByID(conn *example.Example, thingID string) (*example.Thing, error) {
+// 	input := &example.GetThingInput{
 // 		ThingId: aws.String(thingID),
 // 	}
 
@@ -20,11 +20,11 @@ import (
 
 // Thing returns the thing corresponding to the specified input.
 // Returns NotFoundError if no thing is found.
-func Thing(conn *service.Service, input *service.GetThingInput) (*service.Thing, error) {
+func Thing(conn *example.Example, input *example.GetThingInput) (*example.Thing, error) {
 	output, err := conn.GetThing(input)
 
 	// If the AWS API signals that the thing doesn't exist, return NotFoundError.
-	if tfawserr.ErrCodeEquals(err, service.ErrCodeResourceNotFoundException) {
+	if tfawserr.ErrCodeEquals(err, example.ErrCodeResourceNotFoundException) {
 		return nil, &resource.NotFoundError{
 			LastError:   err,
 			LastRequest: input,
@@ -45,7 +45,7 @@ func Thing(conn *service.Service, input *service.GetThingInput) (*service.Thing,
 
 	// If Thing has status(es) indicating that nothing more can be done with the thing
 	// and that the thing will eventually be garbage collected by AWS, return NotFoundError.
-	if status := aws.StringValue(output.Thing.Status); status == service.ThingStatusDeleted {
+	if status := aws.StringValue(output.Thing.Status); status == example.ThingStatusDeleted {
 		return nil, &resource.NotFoundError{
 			Message:     status,
 			LastRequest: input,
@@ -57,8 +57,8 @@ func Thing(conn *service.Service, input *service.GetThingInput) (*service.Thing,
 
 // ThingByID returns the thing corresponding to the specified ID.
 // Returns NotFoundError if no thing is found.
-func ThingByID(conn *service.Service, thingID string) (*service.Thing, error) {
-	input := &service.GetThingsInput{
+func ThingByID(conn *example.Example, thingID string) (*example.Thing, error) {
+	input := &example.GetThingsInput{
 		ThingIds: aws.StringSlice([]string{thingID}),
 	}
 
@@ -73,9 +73,9 @@ func ThingByID(conn *service.Service, thingID string) (*service.Thing, error) {
 
 // ThingsByNameValuesFilters returns the things corresponding to the specified filter.
 // Returns NotFoundError if no thing is found.
-func ThingsByNameValuesFilters(conn *service.Service, filters namevaluesfilters.NameValuesFilters) ([]*service.Thing, error) {
-	input := &service.GetThingsInput{
-		Filters: filters.ServiceFilters(),
+func ThingsByNameValuesFilters(conn *example.Example, filters namevaluesfilters.NameValuesFilters) ([]*example.Thing, error) {
+	input := &example.GetThingsInput{
+		Filters: filters.ExampleFilters(),
 	}
 
 	things, err := Things(conn, input)
@@ -89,10 +89,10 @@ func ThingsByNameValuesFilters(conn *service.Service, filters namevaluesfilters.
 
 // Things returns the things corresponding to the specified input.
 // Returns NotFoundError if no things are found.
-func Things(conn *service.Service, input *service.GetThingsInput) ([]*service.Thing, error) {
-	var things []*service.Thing
+func Things(conn *example.Example, input *example.GetThingsInput) ([]*example.Thing, error) {
+	var things []*example.Thing
 
-	err := conn.GetThingsPages(input, func(page *service.GetThingsOutput, isLast bool) bool {
+	err := conn.GetThingsPages(input, func(page *example.GetThingsOutput, isLast bool) bool {
 		if page == nil {
 			return !isLast
 		}
@@ -104,7 +104,7 @@ func Things(conn *service.Service, input *service.GetThingsInput) ([]*service.Th
 
 			// If Thing has status(es) indicating that nothing more can be done with the thing
 			// and that the thing will eventually be garbage collected by AWS, ignore the thing.
-			if aws.StringValue(thing.Status) == service.ThingStatusDeleted {
+			if aws.StringValue(thing.Status) == example.ThingStatusDeleted {
 				continue
 			}
 
@@ -115,7 +115,7 @@ func Things(conn *service.Service, input *service.GetThingsInput) ([]*service.Th
 	})
 
 	// If the AWS API signals that the thing doesn't exist, return NotFoundError.
-	if tfawserr.ErrCodeEquals(err, service.ErrCodeResourceNotFoundException) {
+	if tfawserr.ErrCodeEquals(err, example.ErrCodeResourceNotFoundException) {
 		return nil, &resource.NotFoundError{
 			LastError:   err,
 			LastRequest: input,

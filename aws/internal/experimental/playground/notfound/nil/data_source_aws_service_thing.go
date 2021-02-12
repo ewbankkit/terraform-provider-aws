@@ -6,12 +6,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/namevaluesfilters"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/nil/finder"
-	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/service"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/example"
 )
 
-func dataSourceAwsServiceThing() *schema.Resource {
+func dataSourceAwsExampleThing() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceAwsServiceThingRead,
+		Read: dataSourceAwsExampleThingRead,
 
 		Schema: map[string]*schema.Schema{
 			// All the attributes.
@@ -19,8 +19,8 @@ func dataSourceAwsServiceThing() *schema.Resource {
 	}
 }
 
-func dataSourceAwsServiceThingRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*service.Service)
+func dataSourceAwsExampleThingRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*example.Example)
 
 	filters := namevaluesfilters.New(map[string]string{
 		"name-1": "value1",
@@ -30,15 +30,15 @@ func dataSourceAwsServiceThingRead(d *schema.ResourceData, meta interface{}) err
 	things, err := finder.ThingsByNameValuesFilters(conn, filters)
 
 	if err != nil {
-		return fmt.Errorf("error reading Service Things: %w", err)
+		return fmt.Errorf("error reading Example Things: %w", err)
 	}
 
 	if things == nil {
-		return fmt.Errorf("no Service Things matched")
+		return fmt.Errorf("no Example Things matched")
 	}
 
 	if n := len(things); n > 0 {
-		return fmt.Errorf("%d Service Things matched; use additional constraints to reduce matches to a single Thing", n)
+		return fmt.Errorf("%d Example Things matched; use additional constraints to reduce matches to a single Thing", n)
 	}
 
 	// Set all the attributes.

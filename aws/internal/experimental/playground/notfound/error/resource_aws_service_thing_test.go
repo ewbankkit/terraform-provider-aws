@@ -3,13 +3,13 @@ package notfound
 import (
 	"testing"
 
-	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/service"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/example"
 )
 
 func Test_ResourceRead(t *testing.T) {
 	testCases := []struct {
 		TestName      string
-		Conn          *service.Service
+		Conn          *example.Example
 		ThingID       string
 		IsNewResource bool
 		ExpectError   bool
@@ -17,73 +17,73 @@ func Test_ResourceRead(t *testing.T) {
 	}{
 		{
 			TestName:      "Valid thing new",
-			Conn:          service.New(),
-			ThingID:       service.VALID_THING_ID,
+			Conn:          example.New(),
+			ThingID:       example.VALID_THING_ID,
 			IsNewResource: true,
 			ExpectError:   false,
-			ExpectedID:    service.VALID_THING_ID,
+			ExpectedID:    example.VALID_THING_ID,
 		},
 		{
 			TestName:      "Valid thing old",
-			Conn:          service.New(),
-			ThingID:       service.VALID_THING_ID,
+			Conn:          example.New(),
+			ThingID:       example.VALID_THING_ID,
 			IsNewResource: false,
 			ExpectError:   false,
-			ExpectedID:    service.VALID_THING_ID,
+			ExpectedID:    example.VALID_THING_ID,
 		},
 		{
 			TestName:      "Not found thing new",
-			Conn:          service.New(),
-			ThingID:       service.NOTFOUND_THING_ID,
+			Conn:          example.New(),
+			ThingID:       example.NOTFOUND_THING_ID,
 			IsNewResource: true,
 			ExpectError:   true,
-			ExpectedID:    service.NOTFOUND_THING_ID,
+			ExpectedID:    example.NOTFOUND_THING_ID,
 		},
 		{
 			TestName:      "Not found thing old",
-			Conn:          service.New(),
-			ThingID:       service.NOTFOUND_THING_ID,
+			Conn:          example.New(),
+			ThingID:       example.NOTFOUND_THING_ID,
 			IsNewResource: false,
 			ExpectError:   false,
 			ExpectedID:    "",
 		},
 		{
 			TestName:      "Empty result thing new",
-			Conn:          service.New(),
-			ThingID:       service.EMPTY_RESULT_THING_ID,
+			Conn:          example.New(),
+			ThingID:       example.EMPTY_RESULT_THING_ID,
 			IsNewResource: true,
 			ExpectError:   true,
-			ExpectedID:    service.EMPTY_RESULT_THING_ID,
+			ExpectedID:    example.EMPTY_RESULT_THING_ID,
 		},
 		{
 			TestName:      "Empty result thing old",
-			Conn:          service.New(),
-			ThingID:       service.EMPTY_RESULT_THING_ID,
+			Conn:          example.New(),
+			ThingID:       example.EMPTY_RESULT_THING_ID,
 			IsNewResource: false,
 			ExpectError:   false,
 			ExpectedID:    "",
 		},
 		{
 			TestName:      "Erroring thing new",
-			Conn:          service.New(),
-			ThingID:       service.ERRORING_THING_ID,
+			Conn:          example.New(),
+			ThingID:       example.ERRORING_THING_ID,
 			IsNewResource: true,
 			ExpectError:   true,
-			ExpectedID:    service.ERRORING_THING_ID,
+			ExpectedID:    example.ERRORING_THING_ID,
 		},
 		{
 			TestName:      "Erroring thing old",
-			Conn:          service.New(),
-			ThingID:       service.ERRORING_THING_ID,
+			Conn:          example.New(),
+			ThingID:       example.ERRORING_THING_ID,
 			IsNewResource: false,
 			ExpectError:   true,
-			ExpectedID:    service.ERRORING_THING_ID,
+			ExpectedID:    example.ERRORING_THING_ID,
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.TestName, func(t *testing.T) {
-			r := resourceAwsServiceThing()
+			r := resourceAwsExampleThing()
 			d := r.Data(nil)
 			d.SetId(testCase.ThingID)
 			if testCase.IsNewResource {
@@ -109,33 +109,33 @@ func Test_ResourceRead(t *testing.T) {
 func Test_ResourceDelete(t *testing.T) {
 	testCases := []struct {
 		TestName    string
-		Conn        *service.Service
+		Conn        *example.Example
 		ThingID     string
 		ExpectError bool
 	}{
 		{
 			TestName:    "Valid thing",
-			Conn:        service.New(),
-			ThingID:     service.VALID_THING_ID,
+			Conn:        example.New(),
+			ThingID:     example.VALID_THING_ID,
 			ExpectError: false,
 		},
 		{
 			TestName:    "Not found thing",
-			Conn:        service.New(),
-			ThingID:     service.NOTFOUND_THING_ID,
+			Conn:        example.New(),
+			ThingID:     example.NOTFOUND_THING_ID,
 			ExpectError: false,
 		},
 		{
 			TestName:    "Erroring thing",
-			Conn:        service.New(),
-			ThingID:     service.ERRORING_THING_ID,
+			Conn:        example.New(),
+			ThingID:     example.ERRORING_THING_ID,
 			ExpectError: true,
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.TestName, func(t *testing.T) {
-			r := resourceAwsServiceThing()
+			r := resourceAwsExampleThing()
 			d := r.Data(nil)
 			d.SetId(testCase.ThingID)
 			err := r.Delete(d, testCase.Conn)

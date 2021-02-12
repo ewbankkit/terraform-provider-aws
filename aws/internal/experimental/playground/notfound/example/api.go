@@ -1,4 +1,4 @@
-package service
+package example
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
@@ -6,10 +6,10 @@ import (
 )
 
 //
-// A play AWS service API.
+// An example AWS service API.
 //
 
-type Service struct {
+type Example struct {
 	n int // Number of times that GetThing has been called.
 }
 
@@ -45,7 +45,7 @@ type DeleteThingOutput struct{}
 
 type Filter struct{}
 
-func (c *Service) GetThing(input *GetThingInput) (*GetThingOutput, error) {
+func (c *Example) GetThing(input *GetThingInput) (*GetThingOutput, error) {
 	if aws.StringValue(input.ThingId) == EMPTY_RESULT_THING_ID {
 		return &GetThingOutput{}, nil
 	}
@@ -73,7 +73,7 @@ func (c *Service) GetThing(input *GetThingInput) (*GetThingOutput, error) {
 	return &GetThingOutput{Thing: &Thing{ThingId: input.ThingId, Status: aws.String(status)}}, nil
 }
 
-func (c *Service) GetThings(input *GetThingsInput) (*GetThingsOutput, error) {
+func (c *Example) GetThings(input *GetThingsInput) (*GetThingsOutput, error) {
 	if len(input.ThingIds) == 0 {
 		return &GetThingsOutput{Things: []*Thing{}}, nil
 	}
@@ -107,7 +107,7 @@ func (c *Service) GetThings(input *GetThingsInput) (*GetThingsOutput, error) {
 	return &GetThingsOutput{Things: []*Thing{{ThingId: aws.String(thingID), Status: aws.String(status)}}}, nil
 }
 
-func (c *Service) DeleteThing(input *DeleteThingInput) (*DeleteThingOutput, error) {
+func (c *Example) DeleteThing(input *DeleteThingInput) (*DeleteThingOutput, error) {
 	if aws.StringValue(input.ThingId) == ERRORING_THING_ID {
 		return nil, awserr.New(ErrCodeInvalidArgumentException, "erroring", nil)
 	}
@@ -119,7 +119,7 @@ func (c *Service) DeleteThing(input *DeleteThingInput) (*DeleteThingOutput, erro
 	return &DeleteThingOutput{}, nil
 }
 
-func (c *Service) GetThingsPages(input *GetThingsInput, fn func(*GetThingsOutput, bool) bool) error {
+func (c *Example) GetThingsPages(input *GetThingsInput, fn func(*GetThingsOutput, bool) bool) error {
 	for {
 		output, err := c.GetThings(input)
 		if err != nil {
@@ -136,8 +136,8 @@ func (c *Service) GetThingsPages(input *GetThingsInput, fn func(*GetThingsOutput
 	return nil
 }
 
-func New() *Service {
-	return &Service{}
+func New() *Example {
+	return &Example{}
 }
 
 const (

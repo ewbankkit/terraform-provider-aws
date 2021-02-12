@@ -8,16 +8,16 @@ import (
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/error/deleter"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/error/finder"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/error/waiter"
-	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/service"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/example"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/tfresource"
 )
 
-func resourceAwsServiceThing() *schema.Resource {
+func resourceAwsExampleThing() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceAwsServiceThingCreate,
-		Read:   resourceAwsServiceThingRead,
-		Update: resourceAwsServiceThingUpdate,
-		Delete: resourceAwsServiceThingDelete,
+		Create: resourceAwsExampleThingCreate,
+		Read:   resourceAwsExampleThingRead,
+		Update: resourceAwsExampleThingUpdate,
+		Delete: resourceAwsExampleThingDelete,
 
 		Schema: map[string]*schema.Schema{
 			// All the attributes.
@@ -25,25 +25,25 @@ func resourceAwsServiceThing() *schema.Resource {
 	}
 }
 
-func resourceAwsServiceThingCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsExampleThingCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId("")
 
-	return resourceAwsServiceThingRead(d, meta)
+	return resourceAwsExampleThingRead(d, meta)
 }
 
-func resourceAwsServiceThingRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*service.Service)
+func resourceAwsExampleThingRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*example.Example)
 
 	thing, err := finder.ThingByID(conn, d.Id())
 
 	if !d.IsNewResource() && tfresource.NotFound(err) {
-		log.Printf("[WARN] Service Thing (%s) not found, removing from state", d.Id())
+		log.Printf("[WARN] Example Thing (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return nil
 	}
 
 	if err != nil {
-		return fmt.Errorf("error reading Service Thing (%s): %w", d.Id(), err)
+		return fmt.Errorf("error reading Example Thing (%s): %w", d.Id(), err)
 	}
 
 	log.Printf("%#v", thing)
@@ -53,12 +53,12 @@ func resourceAwsServiceThingRead(d *schema.ResourceData, meta interface{}) error
 	return nil
 }
 
-func resourceAwsServiceThingUpdate(d *schema.ResourceData, meta interface{}) error {
-	return resourceAwsServiceThingRead(d, meta)
+func resourceAwsExampleThingUpdate(d *schema.ResourceData, meta interface{}) error {
+	return resourceAwsExampleThingRead(d, meta)
 }
 
-func resourceAwsServiceThingDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*service.Service)
+func resourceAwsExampleThingDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*example.Example)
 
 	err := deleter.ThingByID(conn, d.Id())
 
@@ -67,14 +67,14 @@ func resourceAwsServiceThingDelete(d *schema.ResourceData, meta interface{}) err
 	}
 
 	if err != nil {
-		return fmt.Errorf("error deleting Service Thing (%s): %w", d.Id(), err)
+		return fmt.Errorf("error deleting Example Thing (%s): %w", d.Id(), err)
 	}
 
 	// If the deletion occurs asynchronously, wait.
 	_, err = waiter.ThingDeleted(conn, d.Id())
 
 	if err != nil {
-		return fmt.Errorf("error waiting for Service Thing (%s) to delete: %w", d.Id(), err)
+		return fmt.Errorf("error waiting for Example Thing (%s) to delete: %w", d.Id(), err)
 	}
 
 	return nil
