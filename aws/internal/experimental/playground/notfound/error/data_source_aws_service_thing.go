@@ -7,7 +7,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/error/finder"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/example"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/namevaluesfilters"
-	"github.com/terraform-providers/terraform-provider-aws/aws/internal/tfresource"
 )
 
 func dataSourceAwsExampleThing() *schema.Resource {
@@ -30,12 +29,12 @@ func dataSourceAwsExampleThingRead(d *schema.ResourceData, meta interface{}) err
 
 	things, err := finder.ThingsByNameValuesFilters(conn, filters)
 
-	if tfresource.NotFound(err) {
-		return fmt.Errorf("no Example Things matched")
-	}
-
 	if err != nil {
 		return fmt.Errorf("error reading Example Things: %w", err)
+	}
+
+	if len(things) == 0 {
+		return fmt.Errorf("no Example Things matched")
 	}
 
 	if n := len(things); n > 0 {

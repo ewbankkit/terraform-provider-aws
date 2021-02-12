@@ -33,7 +33,7 @@ func dataSourceAwsExampleThingRead(d *schema.ResourceData, meta interface{}) err
 		return fmt.Errorf("error reading Example Things: %w", err)
 	}
 
-	if things == nil {
+	if len(things) == 0 {
 		return fmt.Errorf("no Example Things matched")
 	}
 

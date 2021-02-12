@@ -34,10 +34,6 @@ func dataSourceAwsExampleThingsRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("error reading Example Things: %w", err)
 	}
 
-	if things == nil {
-		return fmt.Errorf("no Example Things matched")
-	}
-
 	// Set all the attributes.
 	for _, thing := range things {
 		log.Printf("%#v", thing)

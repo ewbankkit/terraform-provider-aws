@@ -58,7 +58,7 @@ func ThingByID(conn *example.Example, thingID string) (*example.Thing, error) {
 		return nil, err
 	}
 
-	if things == nil {
+	if len(things) == 0 {
 		return nil, nil
 	}
 
@@ -66,7 +66,7 @@ func ThingByID(conn *example.Example, thingID string) (*example.Thing, error) {
 }
 
 // ThingsByNameValuesFilters returns the things corresponding to the specified filter.
-// Returns nil if no thing is found.
+// Returns an empty slice if no things are found.
 func ThingsByNameValuesFilters(conn *example.Example, filters namevaluesfilters.NameValuesFilters) ([]*example.Thing, error) {
 	input := &example.GetThingsInput{
 		Filters: filters.ExampleFilters(),
@@ -82,7 +82,7 @@ func ThingsByNameValuesFilters(conn *example.Example, filters namevaluesfilters.
 }
 
 // Things returns the things corresponding to the specified input.
-// Returns nil if no things are found.
+// Returns an empty slice if no things are found.
 func Things(conn *example.Example, input *example.GetThingsInput) ([]*example.Thing, error) {
 	var things []*example.Thing
 
@@ -108,18 +108,13 @@ func Things(conn *example.Example, input *example.GetThingsInput) ([]*example.Th
 		return !isLast
 	})
 
-	// If the AWS API signals that the thing doesn't exist, return nil.
+	// If the AWS API signals that the thing doesn't exist, return an empty slice.
 	if tfawserr.ErrCodeEquals(err, example.ErrCodeResourceNotFoundException) {
-		return nil, nil
+		return things, nil
 	}
 
 	if err != nil {
 		return nil, err
-	}
-
-	// Handle any empty result.
-	if len(things) == 0 {
-		return nil, nil
 	}
 
 	return things, nil
