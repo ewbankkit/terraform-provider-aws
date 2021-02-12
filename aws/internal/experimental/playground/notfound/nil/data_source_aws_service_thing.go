@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/example"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/namevaluesfilters"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/nil/finder"
-	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/example"
 )
 
 func dataSourceAwsExampleThing() *schema.Resource {

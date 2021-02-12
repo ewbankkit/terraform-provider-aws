@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/example"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/nil/deleter"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/nil/finder"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/nil/waiter"
-	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/example"
 )
 
 func resourceAwsExampleThing() *schema.Resource {
@@ -76,5 +78,57 @@ func resourceAwsExampleThingDelete(d *schema.ResourceData, meta interface{}) err
 		return fmt.Errorf("error waiting for Example Thing (%s) to delete: %w", d.Id(), err)
 	}
 
+	return nil
+}
+
+func testAccCheckAwsExampleThingExists(name string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		conn := &example.Example{}
+		//conn := testAccProvider.Meta().(*AWSClient).exampleconn
+
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("Not found: %s", name)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No ID is set")
+		}
+
+		thing, err := finder.ThingByID(conn, rs.Primary.ID)
+
+		if err != nil {
+			return err
+		}
+
+		if thing == nil {
+			return fmt.Errorf("Example Thing %s not found", rs.Primary.ID)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckAwsExampleThingDestroy(s *terraform.State) error {
+	conn := &example.Example{}
+	//conn := testAccProvider.Meta().(*AWSClient).globalacceleratorconn
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "aws_example_thing" {
+			continue
+		}
+
+		thing, err := finder.ThingByID(conn, rs.Primary.ID)
+
+		if thing == nil {
+			continue
+		}
+
+		if err != nil {
+			return err
+		}
+
+		return fmt.Errorf("Example Thing %s still exists", rs.Primary.ID)
+	}
 	return nil
 }

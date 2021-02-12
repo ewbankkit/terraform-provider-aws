@@ -3,8 +3,8 @@ package finder
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
-	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/namevaluesfilters"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/example"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/experimental/playground/notfound/namevaluesfilters"
 )
 
 // ThingByID returns the thing corresponding to the specified ID.
